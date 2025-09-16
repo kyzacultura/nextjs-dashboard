@@ -1,6 +1,6 @@
 const Page = () => {
     return (
-        <p> Ivoices Page</p>
+        <p> Invoices Page</p>
     )
 }
 export default Page;
