@@ -1,7 +1,5 @@
-'use server';
-
 import NextAuth from 'next-auth';
-import { authConfig } from '../../auth.config';
+import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import type { User } from '@/app/lib/definitions';
@@ -10,14 +8,9 @@ import postgres from 'postgres';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-// ----------------------------
-// FETCH USER
-// ----------------------------
 async function getUser(email: string): Promise<User | undefined> {
   try {
-    const user = await sql<User[]>`
-      SELECT * FROM users WHERE email = ${email}
-    `;
+    const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
     return user[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);
@@ -25,13 +18,15 @@ async function getUser(email: string): Promise<User | undefined> {
   }
 }
 
-// ----------------------------
-// NEXTAUTH CONFIG
-// ----------------------------
-export const { auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
+      name: 'credentials',
+      credentials: {
+        email: {},
+        password: {}
+      },
       async authorize(credentials) {
         const parsed = z
           .object({
@@ -52,6 +47,6 @@ export const { auth, signIn, signOut } = NextAuth({
 
         return user;
       },
-    }),
-  ],
+    })
+  ]
 });
